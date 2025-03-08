@@ -89,7 +89,7 @@ flutter pub get
 5. Create a pull request.
 
 ## 📜 License
-This project is under progress and is 
+This project is under progress and is open source
 
 ## 🤝 Contact & Support
 - **Project Maintainer:** [Your Name](https://github.com/your-username)
