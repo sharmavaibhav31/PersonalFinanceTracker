@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 
+import 'package:spendo/features/statistics/widgets/chart_icon_button.dart';
+import 'package:spendo/utils/constants/colors.dart';
 
 class SpendingTrendChart extends StatelessWidget {
   const SpendingTrendChart({
@@ -21,6 +23,7 @@ class SpendingTrendChart extends StatelessWidget {
     final theme = Theme.of(context);
     final sortedDates = data.keys.toList()..sort();
     final spots = <FlSpot>[];
+
     for (var i = 0; i < sortedDates.length; i++) {
       final date = sortedDates[i];
       final amount = data[date]!;
@@ -39,10 +42,7 @@ class SpendingTrendChart extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Iconsax.trend_up,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(Iconsax.trend_up, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   '$category Spending Trend',
@@ -78,7 +78,9 @@ class SpendingTrendChart extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
-                          if (index < 0 || index >= sortedDates.length) return const SizedBox();
+                          if (index < 0 || index >= sortedDates.length) {
+                            return const SizedBox();
+                          }
                           final date = sortedDates[index];
                           final formatter = DateFormat.MMMd();
                           return Text(
