@@ -1,3 +1,5 @@
+import 'package:expense_manager/utils/theme.dart';
+import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -49,7 +51,7 @@ class SpendingTrendChart extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                const ChartIconButton(),
+                CustomButton(text: "Test Button", onPressed: (){}),
               ],
             ),
             const SizedBox(height: 20),
