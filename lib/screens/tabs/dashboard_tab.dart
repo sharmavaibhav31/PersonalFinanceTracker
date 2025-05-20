@@ -107,9 +107,9 @@ class DashboardTab extends StatelessWidget {
                       const SizedBox(height: 16),
                       SizedBox(
                         height: 200,
-                        // child: SpendingTrendChart(
-                        //   dailyExpenses: dailyExpenses,
-                        // ),
+                        child: SpendingTrendChart(
+                          dailyExpenses: dailyExpenses,
+                        ),
                       ),
                     ],
                   ),
