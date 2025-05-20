@@ -17,16 +17,16 @@ class DashboardTab extends StatelessWidget {
     final expenseController = Provider.of<ExpenseController>(context);
     final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    
+
     final totalExpenses = expenseController.getTotalExpenses();
     final expensesByCategory = expenseController.getExpensesByCategory();
     final recentExpenses = expenseController.getRecentExpenses(days: 30);
     final dailyExpenses = expenseController.getDailyExpenses(days: 7);
-    
+
     if (expenseController.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     return RefreshIndicator(
       onRefresh: () => expenseController.loadExpenses(),
       child: SingleChildScrollView(
@@ -70,14 +70,14 @@ class DashboardTab extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Expense Summary Card
               ExpenseSummaryCard(
                 totalExpenses: totalExpenses,
                 recentExpenses: recentExpenses,
               ),
               const SizedBox(height: 16),
-              
+
               // Spending Trend Chart
               Card(
                 elevation: 2,
@@ -107,16 +107,16 @@ class DashboardTab extends StatelessWidget {
                       const SizedBox(height: 16),
                       SizedBox(
                         height: 200,
-                        child: SpendingTrendChart(
-                          dailyExpenses: dailyExpenses,
-                        ),
+                        // child: SpendingTrendChart(
+                        //   dailyExpenses: dailyExpenses,
+                        // ),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Category Breakdown
               Text(
                 'Spending by Category',
@@ -139,7 +139,7 @@ class DashboardTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Recent Transactions
               Text(
                 'Recent Transactions',
