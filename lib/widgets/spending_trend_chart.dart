@@ -1,193 +1,144 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:expense_manager/utils/theme.dart';
+import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
+
 
 class SpendingTrendChart extends StatelessWidget {
-  final Map<String, double> dailyExpenses;
-  
   const SpendingTrendChart({
     super.key,
-    required this.dailyExpenses,
+    required this.data,
+    required this.category,
   });
+
+  final Map<DateTime, double> data;
+  final String category;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
-    if (dailyExpenses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.show_chart,
-              size: 48,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No expense data available',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ),
-      );
+    final sortedDates = data.keys.toList()..sort();
+    final spots = <FlSpot>[];
+    for (var i = 0; i < sortedDates.length; i++) {
+      final date = sortedDates[i];
+      final amount = data[date]!;
+      spots.add(FlSpot(i.toDouble(), amount));
     }
-    
-    // Find the max expense for y-axis
-    final maxExpense = dailyExpenses.values.reduce((max, value) => max > value ? max : value);
-    final yMax = (maxExpense * 1.2).ceilToDouble(); // 20% higher than max for better visualization
-    
-    // Sort dates for consistent x-axis
-    final sortedDates = dailyExpenses.keys.toList()
-      ..sort((a, b) {
-        // Parse dates in format 'day/month'
-        final aParts = a.split('/').map(int.parse).toList();
-        final bParts = b.split('/').map(int.parse).toList();
-        
-        // Compare month first, then day
-        if (aParts[1] != bParts[1]) {
-          return aParts[1] - bParts[1];
-        }
-        return aParts[0] - bParts[0];
-      });
-    
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: yMax / 5,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: AppColors.textSecondary.withOpacity(0.2),
-              strokeWidth: 1,
-            );
-          },
-        ),
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-              getTitlesWidget: (value, meta) {
-                if (value < 0 || value >= sortedDates.length) {
-                  return const Text('');
-                }
-                final index = value.toInt();
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    sortedDates[index],
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 40,
-              getTitlesWidget: (value, meta) {
-                if (value == 0) {
-                  return const Text('0');
-                }
-                
-                // Show fewer ticks on y-axis
-                if (value % (yMax / 4).round() != 0) {
-                  return const Text('');
-                }
-                
-                return Text(
-                  '\$${value.toInt()}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                );
-              },
-            ),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-        ),
-        borderData: FlBorderData(
-          show: false,
-        ),
-        minX: 0,
-        maxX: (sortedDates.length - 1).toDouble(),
-        minY: 0,
-        maxY: yMax,
-        lineBarsData: [
-          LineChartBarData(
-            spots: sortedDates.asMap().entries.map((entry) {
-              final index = entry.key;
-              final date = entry.value;
-              final expense = dailyExpenses[date] ?? 0;
-              return FlSpot(index.toDouble(), expense);
-            }).toList(),
-            isCurved: true,
-            color: theme.colorScheme.primary,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: true,
-              getDotPainter: (spot, percent, barData, index) {
-                return FlDotCirclePainter(
-                  radius: 4,
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Iconsax.trend_up,
                   color: theme.colorScheme.primary,
-                  strokeWidth: 2,
-                  strokeColor: Colors.white,
-                );
-              },
-            ),
-            belowBarData: BarAreaData(
-              show: true,
-              color: theme.colorScheme.primary.withOpacity(0.2),
-            ),
-          ),
-        ],
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            tooltipBgColor: theme.colorScheme.surface,
-            tooltipRoundedRadius: 8,
-            tooltipBorder: BorderSide(
-              color: theme.colorScheme.primary.withOpacity(0.2),
-            ),
-            tooltipPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
-            getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-              return touchedBarSpots.map((barSpot) {
-                final date = sortedDates[barSpot.x.toInt()];
-                return LineTooltipItem(
-                  '$date\n',
-                  TextStyle(
-                    color: theme.colorScheme.onSurface,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '$category Spending Trend',
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
-                  children: [
-                    TextSpan(
-                      text: '\$${barSpot.y.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                ),
+                const Spacer(),
+                const ChartIconButton(),
+              ],
+            ),
+            const SizedBox(height: 20),
+            AspectRatio(
+              aspectRatio: 1.5,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) => Text(
+                          '\$${value.toInt()}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= sortedDates.length) return const SizedBox();
+                          final date = sortedDates[index];
+                          final formatter = DateFormat.MMMd();
+                          return Text(
+                            formatter.format(date),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: theme.colorScheme.primary,
+                      barWidth: 3,
+                      dotData: FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: theme.colorScheme.primary.withAlpha((0.3 * 255).toInt()),
                       ),
                     ),
                   ],
-                );
-              }).toList();
-            },
-          ),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipBgColor: theme.colorScheme.surface,
+                      tooltipBorder: BorderSide(
+                        color: theme.colorScheme.primary.withAlpha((0.2 * 255).toInt()),
+                      ),
+                      tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                        return touchedBarSpots.map((barSpot) {
+                          final date = sortedDates[barSpot.x.toInt()];
+                          return LineTooltipItem(
+                            '${DateFormat.MMMd().format(date)}\n',
+                            TextStyle(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '\$${barSpot.y.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
