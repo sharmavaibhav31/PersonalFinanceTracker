@@ -1,6 +1,6 @@
+import 'package:expense_manager/controllers/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:expense_manager/utils/storage_service.dart';
 
@@ -16,27 +16,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   String _currencyFormat = 'USD';
-  
+
   @override
   void initState() {
     super.initState();
     _loadSettings();
   }
-  
+
   Future<void> _loadSettings() async {
-    final notificationsEnabled = await _storageService.getSetting('notifications_enabled', true);
-    final darkModeEnabled = await _storageService.getSetting('dark_mode_enabled', false);
-    final currencyFormat = await _storageService.getSetting('currency_format', 'USD');
-    
+    final notificationsEnabled = await _storageService.getSetting(
+        'notifications_enabled', true);
+    final currencyFormat = await _storageService.getSetting(
+        'currency_format', 'USD');
+
+    final themeController = Provider.of<ThemeController>(
+        context, listen: false);
+    final isDarkMode = themeController.themeMode == ThemeMode.dark;
+
     setState(() {
       _notificationsEnabled = notificationsEnabled;
-      _darkModeEnabled = darkModeEnabled;
+      _darkModeEnabled = isDarkMode;
       _currencyFormat = currencyFormat;
     });
   }
-  
+
   Future<void> _saveSettings() async {
-    await _storageService.saveSetting('notifications_enabled', _notificationsEnabled);
+    await _storageService.saveSetting(
+        'notifications_enabled', _notificationsEnabled);
     await _storageService.saveSetting('dark_mode_enabled', _darkModeEnabled);
     await _storageService.saveSetting('currency_format', _currencyFormat);
   }
@@ -44,7 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final themeController = Provider.of<ThemeController>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -87,6 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     _darkModeEnabled = value;
                   });
+                  themeController.setDarkMode(value);
                   _saveSettings();
                 },
               ),
@@ -103,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showCurrencyPicker();
               },
             ),
-            
+
             // App Settings
             _buildSectionHeader(context, 'App Settings'),
             ListTile(
@@ -137,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showClearDataDialog();
               },
             ),
-            
+
             // About
             _buildSectionHeader(context, 'About'),
             ListTile(
@@ -188,10 +196,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
@@ -203,84 +211,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-  
+
   void _showCurrencyPicker() {
     final currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'INR'];
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Currency'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: currencies.length,
-            itemBuilder: (context, index) {
-              final currency = currencies[index];
-              return ListTile(
-                title: Text(currency),
-                trailing: _currencyFormat == currency
-                    ? Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                    : null,
-                onTap: () {
-                  setState(() {
-                    _currencyFormat = currency;
-                  });
-                  _saveSettings();
-                  Navigator.pop(context);
+      builder: (context) =>
+          AlertDialog(
+            title: const Text('Select Currency'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: currencies.length,
+                itemBuilder: (context, index) {
+                  final currency = currencies[index];
+                  return ListTile(
+                    title: Text(currency),
+                    trailing: _currencyFormat == currency
+                        ? Icon(
+                      Icons.check,
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                    )
+                        : null,
+                    onTap: () {
+                      setState(() {
+                        _currencyFormat = currency;
+                      });
+                      _saveSettings();
+                      Navigator.pop(context);
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
     );
   }
-  
+
   void _showClearDataDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear All Data'),
-        content: const Text(
-          'This will delete all your transactions and settings. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final storageService = StorageService();
-              await storageService.clearExpenses();
-              
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('All data has been cleared'),
-                  ),
-                );
-              }
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
+      builder: (context) =>
+          AlertDialog(
+            title: const Text('Clear All Data'),
+            content: const Text(
+              'This will delete all your transactions and settings. This action cannot be undone.',
             ),
-            child: const Text('Clear Data'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final storageService = StorageService();
+                  await storageService.clearExpenses();
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('All data has been cleared'),
+                      ),
+                    );
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                ),
+                child: const Text('Clear Data'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

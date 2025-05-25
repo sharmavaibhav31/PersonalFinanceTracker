@@ -15,13 +15,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  
+
   final List<Widget> _tabs = [
     const DashboardTab(),
     const HistoryTab(),
     const TipsTab(),
   ];
-  
+
   final List<String> _tabTitles = [
     'Dashboard',
     'Transactions',
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              // Show notifications or alerts 
+              // Show notifications or alerts
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('No new notifications'),
@@ -50,15 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: IndexedStack(
-          index: _currentIndex,
-          children: _tabs,
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _tabs,
       ),
       floatingActionButton: const AddExpenseButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      //floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: CustomBottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
