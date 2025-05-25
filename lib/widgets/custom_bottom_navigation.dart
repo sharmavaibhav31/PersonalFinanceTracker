@@ -15,9 +15,7 @@ class CustomBottomNavigation extends StatelessWidget {
     final theme = Theme.of(context);
     
     return BottomAppBar(
-      height: 60,
-      notchMargin: 8,
-      shape: const CircularNotchedRectangle(),
+      height: 66,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -38,9 +36,6 @@ class CustomBottomNavigation extends StatelessWidget {
             selectedIcon: Icons.history,
             label: 'History',
           ),
-          
-          // Empty space for FAB
-          const SizedBox(width: 40),
           
           // Tips tab
           _buildNavItem(
