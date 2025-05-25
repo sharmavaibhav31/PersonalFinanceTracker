@@ -1,12 +1,14 @@
+import 'package:expense_manager/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class TransactionListItem extends StatelessWidget {
   final Expense expense;
   final VoidCallback onTap;
-  
+
   const TransactionListItem({
     super.key,
     required this.expense,
@@ -16,9 +18,10 @@ class TransactionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencySymbol = context.watch<CurrencyProvider>().currencySymbol;
+    final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
     final dateFormat = DateFormat('MMM d, yyyy');
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(
@@ -40,11 +43,11 @@ class TransactionListItem extends StatelessWidget {
                 ),
                 child: Text(
                   expense.category.icon,
-                  style: const TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 20),
                 ),
               ),
-              const SizedBox(width: 16),
-              
+              const SizedBox(width: 10),
+
               // Transaction details
               Expanded(
                 child: Column(
@@ -52,6 +55,8 @@ class TransactionListItem extends StatelessWidget {
                   children: [
                     Text(
                       expense.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -72,17 +77,22 @@ class TransactionListItem extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.secondary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            expense.category.name,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.secondary,
-                              fontWeight: FontWeight.w500,
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              expense.category.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.secondary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ),
@@ -91,13 +101,20 @@ class TransactionListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
+              const SizedBox(width: 8),
+
               // Amount
-              Text(
-                currencyFormat.format(expense.amount),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  currencyFormat.format(expense.amount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ],

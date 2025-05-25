@@ -1,8 +1,10 @@
+import 'package:expense_manager/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/screens/expense_details_screen.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class RecentTransactionsCard extends StatelessWidget {
   final List<Expense> expenses;
@@ -15,7 +17,8 @@ class RecentTransactionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencySymbol = context.watch<CurrencyProvider>().currencySymbol;
+final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
     
     return Card(
       elevation: 2,

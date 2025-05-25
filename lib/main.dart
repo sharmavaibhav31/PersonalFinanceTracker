@@ -1,4 +1,5 @@
 import 'package:expense_manager/controllers/theme_controller.dart';
+import 'package:expense_manager/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/screens/login_screen.dart';
@@ -7,13 +8,19 @@ import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/utils/theme.dart';
 
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final currencyProvider = CurrencyProvider();
+  await currencyProvider.loadCurrencyCode();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => ExpenseController()),
         ChangeNotifierProvider(create: (_) => ThemeController()),
+        ChangeNotifierProvider(create: (_) => currencyProvider),
       ],
       child: const MyApp(),
     ),

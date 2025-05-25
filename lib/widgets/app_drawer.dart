@@ -1,3 +1,4 @@
+import 'package:expense_manager/screens/tabs/history_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/controllers/auth_controller.dart';
@@ -14,58 +15,50 @@ class AppDrawer extends StatelessWidget {
     final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
     final user = authController.currentUser;
-    
+
     if (user == null) return const SizedBox.shrink();
-    
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
+          UserAccountsDrawerHeader(
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    user.username.substring(0, 1).toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(
+                user.username.substring(0, 1).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  user.username,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  user.email,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+              ),
+            ),
+            accountName: Text(
+              user.username,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            accountEmail: Text(
+              user.email,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
             ),
           ),
-          
+
           // Drawer items
           ListTile(
             leading: const Icon(Icons.account_circle_outlined),
             title: const Text('Profile'),
             onTap: () {
-              Navigator.pop(context); // Close drawer
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
@@ -73,18 +66,10 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Transaction History'),
-            onTap: () {
-              Navigator.pop(context);
-              // Already in the app, just close the drawer
-            },
-          ),
-          ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Settings'),
             onTap: () {
-              Navigator.pop(context); // Close drawer
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -99,9 +84,7 @@ class AppDrawer extends StatelessWidget {
             ),
             title: Text(
               'Logout',
-              style: TextStyle(
-                color: AppColors.error,
-              ),
+              style: TextStyle(color: AppColors.error),
             ),
             onTap: () async {
               showDialog(
@@ -116,13 +99,13 @@ class AppDrawer extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () async {
-                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context);
                         await authController.logout();
                         if (context.mounted) {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(builder: (_) => const LoginScreen()),
-                            (route) => false,
+                                (route) => false,
                           );
                         }
                       },

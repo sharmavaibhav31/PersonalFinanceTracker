@@ -121,7 +121,7 @@ class SpendingTrendChart extends StatelessWidget {
               final expense = dailyExpenses[date] ?? 0;
               return FlSpot(index.toDouble(), expense);
             }).toList(),
-            isCurved: true,
+            isCurved: false,
             color: theme.colorScheme.primary,
             barWidth: 3,
             isStrokeCapRound: true,

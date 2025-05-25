@@ -1,7 +1,9 @@
+import 'package:expense_manager/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ExpenseSummaryCard extends StatelessWidget {
   final double totalExpenses;
@@ -16,7 +18,8 @@ class ExpenseSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencySymbol = context.watch<CurrencyProvider>().currencySymbol;
+final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
     
     // Calculate this month's expenses
     final now = DateTime.now();

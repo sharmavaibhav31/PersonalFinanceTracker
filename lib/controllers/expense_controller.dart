@@ -18,6 +18,21 @@ class ExpenseController extends ChangeNotifier {
     loadExpenses();
   }
 
+  Future<void> clearAllExpenses() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _expenses.clear();
+      await _storageService.clearExpenses();
+    } catch (e) {
+      _error = 'Failed to clear expenses: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> loadExpenses() async {
     try {
       _isLoading = true;

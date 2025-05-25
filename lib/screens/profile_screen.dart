@@ -4,6 +4,12 @@ import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
 import 'package:expense_manager/utils/theme.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_manager/controllers/auth_controller.dart';
+import 'package:expense_manager/widgets/custom_button.dart';
+import 'package:expense_manager/widgets/custom_text_field.dart';
+import 'package:expense_manager/utils/theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

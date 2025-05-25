@@ -14,38 +14,41 @@ class CustomBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return BottomAppBar(
-      height: 66,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // Dashboard tab
-          _buildNavItem(
-            context,
-            index: 0,
-            icon: Icons.dashboard_outlined,
-            selectedIcon: Icons.dashboard,
-            label: 'Dashboard',
-          ),
-          
-          // History tab
-          _buildNavItem(
-            context,
-            index: 1,
-            icon: Icons.history_outlined,
-            selectedIcon: Icons.history,
-            label: 'History',
-          ),
-          
-          // Tips tab
-          _buildNavItem(
-            context,
-            index: 2,
-            icon: Icons.lightbulb_outline,
-            selectedIcon: Icons.lightbulb,
-            label: 'Tips',
-          ),
-        ],
+    return SafeArea(
+      child: BottomAppBar(
+        elevation: 0,
+        height: 66,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            // Dashboard tab
+            _buildNavItem(
+              context,
+              index: 0,
+              icon: Icons.dashboard_outlined,
+              selectedIcon: Icons.dashboard,
+              label: 'Dashboard',
+            ),
+
+            // History tab
+            _buildNavItem(
+              context,
+              index: 1,
+              icon: Icons.history_outlined,
+              selectedIcon: Icons.history,
+              label: 'History',
+            ),
+
+            // Tips tab
+            _buildNavItem(
+              context,
+              index: 2,
+              icon: Icons.lightbulb_outline,
+              selectedIcon: Icons.lightbulb,
+              label: 'Tips',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -62,6 +65,8 @@ class CustomBottomNavigation extends StatelessWidget {
     
     return Expanded(
       child: InkWell(
+        splashColor: theme.colorScheme.primary.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(50),
         onTap: () => onTap(index),
         child: Column(
           mainAxisSize: MainAxisSize.min,

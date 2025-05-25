@@ -1,7 +1,9 @@
+import 'package:expense_manager/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class CategoryBreakdownChart extends StatelessWidget {
   final Map<ExpenseCategory, double> expensesByCategory;
@@ -14,7 +16,8 @@ class CategoryBreakdownChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currencyFormat = NumberFormat.currency(symbol: '\$');
+    final currencySymbol = context.watch<CurrencyProvider>().currencySymbol;
+final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
     final total = expensesByCategory.values.fold(0.0, (sum, amount) => sum + amount);
     
     if (expensesByCategory.isEmpty) {
@@ -61,7 +64,7 @@ class CategoryBreakdownChart extends StatelessWidget {
         value: amount,
         title: '$percentage%',
         color: categoryColors[category] ?? Colors.grey,
-        radius: 80,
+        radius: 70,
         titleStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
