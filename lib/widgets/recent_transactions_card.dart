@@ -1,4 +1,5 @@
 import 'package:expense_manager/providers/currency_provider.dart';
+import 'package:expense_manager/screens/tabs/history_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/screens/expense_details_screen.dart';
@@ -106,8 +107,13 @@ final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
                 padding: const EdgeInsets.only(top: 8),
                 child: TextButton(
                   onPressed: () {
-                    // Navigate to history tab
-                    // This would typically be handled by the parent widget
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            HistoryTab(),
+                      ),
+                    );
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

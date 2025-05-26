@@ -41,137 +41,119 @@ class _HistoryTabState extends State<HistoryTab> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      // Search and filter
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              decoration: InputDecoration(
-                                hintText: 'Search transactions',
-                                prefixIcon: const Icon(Icons.search),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 16,
-                                ),
-                              ),
-                              onChanged: (value) {
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search + Filter
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'Search transactions',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        FilterChip(
+                          label: const Text('All'),
+                          selected: _selectedCategory == null,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedCategory = null;
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        ...ExpenseCategory.values.map((category) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(category.name),
+                              selected: _selectedCategory == category,
+                              onSelected: (selected) {
                                 setState(() {
-                                  _searchQuery = value;
+                                  _selectedCategory = selected ? category : null;
                                 });
                               },
                             ),
-                            const SizedBox(height: 16),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  FilterChip(
-                                    label: const Text('All'),
-                                    selected: _selectedCategory == null,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        _selectedCategory = null;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ...ExpenseCategory.values.map((category) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: FilterChip(
-                                        label: Text(category.name),
-                                        selected: _selectedCategory == category,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            _selectedCategory = selected ? category : null;
-                                          });
-                                        },
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Transactions list
-                      Expanded(
-                        child: filteredExpenses.isEmpty
-                            ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.receipt_long,
-                                size: 64,
-                                color: AppColors.textSecondary.withOpacity(0.5),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No transactions found',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              if (_searchQuery.isNotEmpty || _selectedCategory != null)
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _searchQuery = '';
-                                      _selectedCategory = null;
-                                    });
-                                  },
-                                  child: const Text('Clear filters'),
-                                ),
-                            ],
-                          ),
-                        )
-                            : ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: filteredExpenses.length,
-                          itemBuilder: (context, index) {
-                            final expense = filteredExpenses[index];
-                            return TransactionListItem(
-                              expense: expense,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ExpenseDetailsScreen(expense: expense),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 80), // space for FAB if needed
-                    ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
-          );
-        },
+
+            // Transaction list section
+            Expanded(
+              child: filteredExpenses.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.receipt_long,
+                        size: 64,
+                        color: AppColors.textSecondary.withOpacity(0.5)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No transactions found',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (_searchQuery.isNotEmpty || _selectedCategory != null)
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = '';
+                            _selectedCategory = null;
+                          });
+                        },
+                        child: const Text('Clear filters'),
+                      ),
+                  ],
+                ),
+              )
+                  : ListView.builder(
+                itemCount: filteredExpenses.length,
+                itemBuilder: (context, index) {
+                  final expense = filteredExpenses[index];
+                  return TransactionListItem(
+                    expense: expense,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ExpenseDetailsScreen(expense: expense),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 80), // space for FAB if needed
+          ],
+        ),
       ),
+
     );
   }
 }
