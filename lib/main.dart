@@ -8,6 +8,8 @@ import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/utils/theme.dart';
 
 
+
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
