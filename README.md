@@ -1,4 +1,4 @@
-# expensemanager
+# Financial Clarity Starts with Fintrix
 
 A new Flutter project.
 
