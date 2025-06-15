@@ -6,12 +6,13 @@ import 'package:expense_manager/screens/login_screen.dart';
 import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/utils/theme.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 
 
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   final currencyProvider = CurrencyProvider();
   await currencyProvider.loadCurrencyCode();

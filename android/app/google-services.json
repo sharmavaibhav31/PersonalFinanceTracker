@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "241435751475",
+    "project_id": "fintrix-e15de",
+    "storage_bucket": "fintrix-e15de.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241435751475:android:cbfdb289c7f35437351f46",
+        "android_client_info": {
+          "package_name": "com.example.expensemanager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241435751475-96bbve43tqos0hlsqruin4fedcqd0bqs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5t2l7ZUUkbCG5cAqRu7HWQ0QqNN3-WZ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241435751475-96bbve43tqos0hlsqruin4fedcqd0bqs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

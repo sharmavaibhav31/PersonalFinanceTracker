@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:expense_manager/models/user_model.dart';
 import 'package:expense_manager/utils/storage_service.dart';
-import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 
 class AuthController extends ChangeNotifier {
   User? _currentUser;
@@ -14,7 +14,7 @@ class AuthController extends ChangeNotifier {
   String? get error => _error;
 
   final _storageService = StorageService();
-  final _uuid = const Uuid();
+  final firebase.FirebaseAuth _firebaseAuth = firebase.FirebaseAuth.instance;
 
   AuthController() {
     _loadUser();
@@ -25,9 +25,20 @@ class AuthController extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final userData = await _storageService.getUserData();
-      if (userData != null) {
-        _currentUser = User.fromJson(userData);
+      final firebaseUser = _firebaseAuth.currentUser;
+      if (firebaseUser != null) {
+        _currentUser = User(
+          id: firebaseUser.uid,
+          username: firebaseUser.displayName ?? '',
+          email: firebaseUser.email ?? '',
+          avatarUrl: firebaseUser.photoURL,
+          createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
+        );
+      } else {
+        final userData = await _storageService.getUserData();
+        if (userData != null) {
+          _currentUser = User.fromJson(userData);
+        }
       }
     } catch (e) {
       _error = 'Failed to load user data';
@@ -43,29 +54,32 @@ class AuthController extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // In a real app, validate credentials against backend
-      // For demo, just check for demo@example.com / password
-      if (email == 'demo@example.com' && password == 'password') {
-        final user = User(
-          id: _uuid.v4(),
-          username: 'Demo User',
-          email: email,
-          createdAt: DateTime.now(),
+      final firebaseUser = credential.user;
+      if (firebaseUser != null) {
+        _currentUser = User(
+          id: firebaseUser.uid,
+          username: firebaseUser.displayName ?? '',
+          email: firebaseUser.email ?? '',
+          avatarUrl: firebaseUser.photoURL,
+          createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
         );
-
-        await _storageService.saveUserData(user.toJson());
-        _currentUser = user;
-        _error = null;
+        await _storageService.saveUserData(_currentUser!.toJson());
         notifyListeners();
         return true;
       } else {
-        _error = 'Invalid email or password';
+        _error = 'User not found';
         notifyListeners();
         return false;
       }
+    } on firebase.FirebaseAuthException catch (e) {
+      _error = e.message ?? 'Login failed';
+      notifyListeners();
+      return false;
     } catch (e) {
       _error = 'Login failed: $e';
       notifyListeners();
@@ -82,23 +96,35 @@ class AuthController extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // In a real app, send registration data to backend
-      // For demo, just create a local user
-      final user = User(
-        id: _uuid.v4(),
-        username: username,
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
-        createdAt: DateTime.now(),
+        password: password,
       );
 
-      await _storageService.saveUserData(user.toJson());
-      _currentUser = user;
-      _error = null;
+      final firebaseUser = credential.user;
+      if (firebaseUser != null) {
+        // Optionally update display name
+        await firebaseUser.updateDisplayName(username);
+
+        _currentUser = User(
+          id: firebaseUser.uid,
+          username: username,
+          email: firebaseUser.email ?? '',
+          avatarUrl: firebaseUser.photoURL,
+          createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
+        );
+        await _storageService.saveUserData(_currentUser!.toJson());
+        notifyListeners();
+        return true;
+      } else {
+        _error = 'Registration failed';
+        notifyListeners();
+        return false;
+      }
+    } on firebase.FirebaseAuthException catch (e) {
+      _error = e.message ?? 'Registration failed';
       notifyListeners();
-      return true;
+      return false;
     } catch (e) {
       _error = 'Registration failed: $e';
       notifyListeners();
@@ -114,6 +140,7 @@ class AuthController extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      await _firebaseAuth.signOut();
       await _storageService.deleteUserData();
       _currentUser = null;
     } catch (e) {
@@ -130,6 +157,14 @@ class AuthController extends ChangeNotifier {
 
       _isLoading = true;
       notifyListeners();
+
+      final firebaseUser = _firebaseAuth.currentUser;
+      if (firebaseUser != null) {
+        await firebaseUser.updateDisplayName(username);
+        if (avatarUrl != null) {
+          await firebaseUser.updatePhotoURL(avatarUrl);
+        }
+      }
 
       final updatedUser = User(
         id: _currentUser!.id,

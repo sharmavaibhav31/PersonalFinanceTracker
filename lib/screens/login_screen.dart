@@ -5,7 +5,8 @@ import 'package:expense_manager/screens/home_screen.dart';
 import 'package:expense_manager/screens/register_screen.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
-qq
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -13,36 +14,34 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Add sample credentials for demo purposes
     _emailController.text = 'demo@example.com';
     _passwordController.text = 'password';
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-    
+
     _animationController.forward();
   }
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -53,12 +52,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      final authController = Provider.of<AuthController>(context, listen: false);
+      final authController = Provider.of<AuthController>(
+        context,
+        listen: false,
+      );
       final success = await authController.login(
         _emailController.text,
         _passwordController.text,
       );
-      
+
       if (success && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -71,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Login form
                     CustomTextField(
                       controller: _emailController,
@@ -141,7 +143,75 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          // Show a dialog to enter email, or navigate to a dedicated reset screen
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              final _resetEmailController =
+                                  TextEditingController(
+                                    text: _emailController.text,
+                                  );
+                              return AlertDialog(
+                                title: const Text('Reset Password'),
+                                content: TextField(
+                                  controller: _resetEmailController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Enter your email',
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      try {
+                                        await firebase.FirebaseAuth.instance
+                                            .sendPasswordResetEmail(
+                                              email:
+                                                  _resetEmailController.text
+                                                      .trim(),
+                                            );
+                                        Navigator.of(context).pop();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Password reset email sent!',
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Error: ${e.toString()}',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Send'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: const Text('Forgot Password?'),
+                      ),
+                    ),
+
                     // Error message if authentication fails
                     if (authController.error != null)
                       Padding(
@@ -155,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    
+
                     // Login button
                     CustomButton(
                       text: 'Login',
@@ -163,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       onPressed: _handleLogin,
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Register link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
