@@ -8,11 +8,13 @@ import 'package:provider/provider.dart';
 class ExpenseSummaryCard extends StatelessWidget {
   final double totalExpenses;
   final List<Expense> recentExpenses;
+  final double? monthlyBudget; // optional
   
   const ExpenseSummaryCard({
     super.key,
     required this.totalExpenses,
     required this.recentExpenses,
+    this.monthlyBudget,
   });
 
   @override
@@ -34,6 +36,10 @@ final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
         .where((e) => e.date.isAfter(last7Days))
         .fold(0.0, (sum, e) => sum + e.amount);
     
+    final remaining = monthlyBudget != null && monthlyBudget! > 0
+        ? (monthlyBudget! - monthlyExpenses).clamp(-9999999, 9999999)
+        : null;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -110,6 +116,16 @@ final currencyFormat = NumberFormat.currency(symbol: currencySymbol);
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (remaining != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Remaining: ${currencyFormat.format(remaining)}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: remaining >= 0 ? AppColors.success : AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ]
                   ],
                 ),
               ],

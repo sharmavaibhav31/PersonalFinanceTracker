@@ -1,4 +1,4 @@
-import 'package:expense_manager/screens/tabs/history_tab.dart';
+// Removed unused import
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/controllers/auth_controller.dart';
@@ -74,6 +74,22 @@ class AppDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.psychology_outlined),
+            title: const Text('AI Mentor'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/ai');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.school_outlined),
+            title: const Text('Literacy Hub'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/hub');
             },
           ),
           const Divider(),

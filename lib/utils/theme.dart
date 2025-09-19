@@ -47,11 +47,11 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      cardTheme: CardTheme(
-        color: AppColors.surface,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
+      // cardTheme: CardTheme(
+      //   color: AppColors.surface,
+      //   elevation: 2,
+      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
@@ -151,11 +151,11 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      cardTheme: CardTheme(
-        color: AppColors.surfaceDark,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
+      // cardTheme: CardTheme(
+      //   color: AppColors.surfaceDark,
+      //   elevation: 2,
+      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,

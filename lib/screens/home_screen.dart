@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<String> _tabTitles = [
     'Dashboard',
     'Transactions',
-    'Tips',
+    'Learn',
   ];
 
   @override
