@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:expense_manager/widgets/app_drawer.dart';
 import 'package:expense_manager/screens/tabs/dashboard_tab.dart';
 import 'package:expense_manager/screens/tabs/history_tab.dart';
 import 'package:expense_manager/screens/tabs/tips_tab.dart';
 import 'package:expense_manager/widgets/custom_bottom_navigation.dart';
 import 'package:expense_manager/widgets/add_expense_button.dart';
+import 'package:expense_manager/controllers/notification_controller.dart';
+import 'package:expense_manager/controllers/expense_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,21 +32,65 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Check for budget alerts when home screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBudgetAlerts();
+    });
+  }
+
+  void _checkBudgetAlerts() {
+    final expenseController = Provider.of<ExpenseController>(context, listen: false);
+    final notificationController = Provider.of<NotificationController>(context, listen: false);
+    
+    // Check budget alerts with current expenses
+    notificationController.checkBudgetAlerts(expenseController.expenses);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_tabTitles[_currentIndex]),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // Show notifications or alerts
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No new notifications'),
-                  behavior: SnackBarBehavior.floating,
-                ),
+          Consumer<NotificationController>(
+            builder: (context, notificationController, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/notifications');
+                    },
+                  ),
+                  if (notificationController.unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${notificationController.unreadCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),

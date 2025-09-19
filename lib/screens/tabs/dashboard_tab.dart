@@ -9,6 +9,7 @@ import 'package:expense_manager/widgets/category_breakdown_chart.dart';
 import 'package:expense_manager/widgets/spending_trend_chart.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:expense_manager/utils/storage_service.dart';
+import 'package:expense_manager/controllers/notification_controller.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -303,7 +304,13 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget build(BuildContext context) {
     final expenseController = Provider.of<ExpenseController>(context);
     final authController = Provider.of<AuthController>(context);
+    final notificationController = Provider.of<NotificationController>(context);
     final theme = Theme.of(context);
+
+    // Check budget alerts whenever expenses change
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notificationController.checkBudgetAlerts(expenseController.expenses);
+    });
 
     final totalExpenses = expenseController.getTotalExpenses();
     final expensesByCategory = expenseController.getExpensesByCategory();
