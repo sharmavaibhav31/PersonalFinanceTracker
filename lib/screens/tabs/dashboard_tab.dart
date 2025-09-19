@@ -415,12 +415,30 @@ class _DashboardTabState extends State<DashboardTab> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              LinearProgressIndicator(
-                                value: score / 100,
-                                minHeight: 10,
-                                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                backgroundColor: theme.colorScheme.surface.withOpacity(0.5),
-                                valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                              GestureDetector(
+                                onTap: () => _showScoreBreakdownDialog(context, score),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  child: Column(
+                                    children: [
+                                      LinearProgressIndicator(
+                                        value: score / 100,
+                                        minHeight: 10,
+                                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                        backgroundColor: theme.colorScheme.surface.withOpacity(0.5),
+                                        valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Tap for details',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: AppColors.textSecondary,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
