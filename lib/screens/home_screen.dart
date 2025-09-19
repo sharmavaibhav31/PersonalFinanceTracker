@@ -4,6 +4,7 @@ import 'package:expense_manager/widgets/app_drawer.dart';
 import 'package:expense_manager/screens/tabs/dashboard_tab.dart';
 import 'package:expense_manager/screens/tabs/history_tab.dart';
 import 'package:expense_manager/screens/tabs/tips_tab.dart';
+import 'package:expense_manager/screens/ai_mentor_screen.dart';
 import 'package:expense_manager/widgets/custom_bottom_navigation.dart';
 import 'package:expense_manager/widgets/add_expense_button.dart';
 import 'package:expense_manager/controllers/notification_controller.dart';
@@ -22,12 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _tabs = [
     const DashboardTab(),
     const HistoryTab(),
+    const AIMentorScreen(),
     const TipsTab(),
   ];
 
   final List<String> _tabTitles = [
     'Dashboard',
     'Transactions',
+    'AI Mentor',
     'Learn',
   ];
 
@@ -46,6 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Check budget alerts with current expenses
     notificationController.checkBudgetAlerts(expenseController.expenses);
+  }
+
+  bool _shouldShowFAB() {
+    // Show FAB only on Dashboard (0) and Transactions (1) tabs
+    // Hide on AI Mentor (2) and Learn (3) tabs
+    return _currentIndex == 0 || _currentIndex == 1;
   }
 
   @override
@@ -101,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: _tabs,
       ),
-      floatingActionButton: const AddExpenseButton(),
+      floatingActionButton: _shouldShowFAB() ? const AddExpenseButton() : null,
       //floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: CustomBottomNavigation(
         currentIndex: _currentIndex,

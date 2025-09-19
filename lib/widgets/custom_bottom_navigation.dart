@@ -39,13 +39,22 @@ class CustomBottomNavigation extends StatelessWidget {
               label: 'History',
             ),
 
-            // Tips tab
+            // AI Mentor tab
             _buildNavItem(
               context,
               index: 2,
+              icon: Icons.psychology_outlined,
+              selectedIcon: Icons.psychology,
+              label: 'AI Mentor',
+            ),
+
+            // Tips tab
+            _buildNavItem(
+              context,
+              index: 3,
               icon: Icons.lightbulb_outline,
               selectedIcon: Icons.lightbulb,
-              label: 'Tips',
+              label: 'Learn',
             ),
           ],
         ),
