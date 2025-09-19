@@ -1,11 +1,11 @@
 {
-    "name": "expensemanager",
-    "short_name": "expensemanager",
+    "name": "FinTrix",
+    "short_name": "FinTrix",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "FinTrix - Smart Expense Manager & Financial Literacy Hub",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
