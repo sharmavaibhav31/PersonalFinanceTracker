@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 class AddEditExpenseScreen extends StatefulWidget {
   final Expense? expense;
@@ -70,16 +70,15 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
       });
     }
   }
-  
+
   void _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authController = Provider.of<AuthController>(context, listen: false);
     final expenseController = Provider.of<ExpenseController>(context, listen: false);
+    final user = Supabase.instance.client.auth.currentUser;
     final amount = double.parse(_amountController.text);
-    
+
     if (widget.isEditing && widget.expense != null) {
-      // Update existing expense
       final updatedExpense = Expense(
         id: widget.expense!.id,
         userId: widget.expense!.userId,
@@ -89,12 +88,10 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
         category: _selectedCategory,
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
-      
       await expenseController.updateExpense(updatedExpense);
     } else {
-      // Create new expense
       await expenseController.addExpense(
-        userId: authController.currentUser!.id,
+        userId: user?.id ?? 'local-user',
         title: _titleController.text,
         amount: amount,
         date: _selectedDate,
@@ -102,7 +99,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
     }
-    
+
     if (mounted) {
       Navigator.pop(context);
     }

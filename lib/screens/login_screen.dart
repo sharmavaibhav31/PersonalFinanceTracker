@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
-import 'package:expense_manager/screens/home_screen.dart';
 import 'package:expense_manager/screens/register_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:expense_manager/services/auth_service.dart';
+import 'package:expense_manager/screens/home_screen.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
 
@@ -13,36 +12,35 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
+  bool _isLoading = false;
+  String? _error;
+
   @override
   void initState() {
     super.initState();
-    
-    // Add sample credentials for demo purposes
-    _emailController.text = 'demo@example.com';
-    _passwordController.text = 'password';
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-    
+
     _animationController.forward();
   }
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -51,27 +49,44 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
-  void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      final success = await authController.login(
-        _emailController.text,
-        _passwordController.text,
-      );
-      
-      if (success && mounted) {
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final res = await _authService.signInWithEmailPassword(email, password);
+
+      if (res.user != null && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
+      } else {
+        setState(() {
+          _error = "Invalid email or password";
+        });
       }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -82,10 +97,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // App logo and title
                     Icon(
                       Icons.account_balance_wallet,
                       size: 64,
@@ -105,8 +118,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
-                    
-                    // Login form
                     CustomTextField(
                       controller: _emailController,
                       label: 'Email',
@@ -114,12 +125,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
+                        if (!value.contains('@'))
                           return 'Please enter a valid email';
-                        }
                         return null;
                       },
                     ),
@@ -131,23 +140,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       prefixIcon: Icons.lock_outline,
                       isPassword: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
+                        if (value.length < 6)
                           return 'Password must be at least 6 characters';
-                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    
-                    // Error message if authentication fails
-                    if (authController.error != null)
+                    if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: Text(
-                          authController.error!,
+                          _error!,
                           style: TextStyle(
                             color: theme.colorScheme.error,
                             fontSize: 14,
@@ -155,16 +160,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    
-                    // Login button
                     CustomButton(
                       text: 'Login',
-                      isLoading: authController.isLoading,
+                      isLoading: _isLoading,
                       onPressed: _handleLogin,
                     ),
                     const SizedBox(height: 24),
-                    
-                    // Register link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -173,13 +174,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           style: theme.textTheme.bodyMedium,
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const RegisterScreen(),
+                          onPressed:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (builder) => RegisterScreen(),
+                                ),
                               ),
-                            );
-                          },
                           child: const Text('Sign up'),
                         ),
                       ],

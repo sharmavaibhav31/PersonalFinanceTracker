@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/models/expense_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -43,7 +43,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final expenseController = Provider.of<ExpenseController>(context, listen: false);
-    final authController = Provider.of<AuthController>(context, listen: false);
+    final user = Supabase.instance.client.auth.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +136,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     if (!_formKey.currentState!.validate()) return;
                     final amount = double.parse(_amountController.text);
                     await expenseController.addExpense(
-                      userId: authController.currentUser?.id ?? 'local-user',
+                      userId: user?.id ?? 'local-user',
                       title: _titleController.text,
                       amount: amount,
                       date: _selectedDate,
