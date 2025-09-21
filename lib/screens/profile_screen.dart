@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
-import 'package:expense_manager/widgets/custom_button.dart';
-import 'package:expense_manager/widgets/custom_text_field.dart';
-import 'package:expense_manager/utils/theme.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
 import 'package:expense_manager/utils/theme.dart';
@@ -22,55 +15,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   bool _isEditing = false;
-  
+  bool _isLoading = false;
+
+  User? get _user => Supabase.instance.client.auth.currentUser;
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
-  
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    super.dispose();
-  }
-  
-  void _loadUserData() {
-    final user = Provider.of<AuthController>(context, listen: false).currentUser;
-    if (user != null) {
-      _usernameController.text = user.username;
+
+  String _formatDate(String createdAt) {
+    try {
+      final dt = DateTime.parse(createdAt);
+      return "${dt.day}/${dt.month}/${dt.year}";
+    } catch (e) {
+      return createdAt; // fallback if parsing fails
     }
   }
-  
+
+
+  void _loadUserData() {
+    if (_user != null) {
+      _usernameController.text = _user!.userMetadata?['username'] ?? '';
+    }
+  }
+
   void _toggleEdit() {
     setState(() {
       _isEditing = !_isEditing;
     });
   }
-  
-  void _saveProfile() async {
+
+  Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
-    
-    final authController = Provider.of<AuthController>(context, listen: false);
-    await authController.updateProfile(_usernameController.text);
-    
-    if (mounted) {
-      setState(() {
-        _isEditing = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+
+    setState(() => _isLoading = true);
+
+    try {
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(
+          data: {'username': _usernameController.text},
+        ),
       );
+
+      if (mounted) {
+        setState(() {
+          _isEditing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating profile: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    final user = authController.currentUser;
-    
+    final user = _user;
+
     if (user == null) {
       return const Scaffold(
         body: Center(
@@ -78,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
     }
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -98,41 +111,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Profile image
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 56,
-                    backgroundColor: theme.colorScheme.primary,
-                    child: Text(
-                      user.username.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+              CircleAvatar(
+                radius: 56,
+                backgroundColor: theme.colorScheme.primary,
+                child: Text(
+                  (user.userMetadata?['username'] ?? user.email ?? 'U')
+                      .substring(0, 1)
+                      .toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  if (_isEditing)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
               const SizedBox(height: 24),
-              
+
               // Profile info
               Card(
                 elevation: 2,
@@ -149,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: theme.textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Username
                       if (_isEditing) ...[
                         CustomTextField(
@@ -168,39 +162,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildProfileRow(
                           context,
                           'Username',
-                          user.username,
+                          user.userMetadata?['username'] ?? 'Not set',
                           Icons.person,
                         ),
                       ],
                       const Divider(height: 32),
-                      
+
                       // Email
                       _buildProfileRow(
                         context,
                         'Email',
-                        user.email,
+                        user.email ?? 'No email',
                         Icons.email,
                       ),
                       const Divider(height: 32),
-                      
-                      // Member since
+
+                      // Created At
                       _buildProfileRow(
                         context,
                         'Member Since',
-                        '${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
+                        user.createdAt != null
+                            ? _formatDate(user.createdAt!)
+                            : 'Unknown',
                         Icons.calendar_today,
                       ),
+
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Save button (when editing)
               if (_isEditing)
                 CustomButton(
                   text: 'Save Changes',
-                  isLoading: authController.isLoading,
+                  isLoading: _isLoading,
                   onPressed: _saveProfile,
                 ),
             ],
@@ -209,15 +206,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
   Widget _buildProfileRow(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-  ) {
+      BuildContext context,
+      String label,
+      String value,
+      IconData icon,
+      ) {
     final theme = Theme.of(context);
-    
+
     return Row(
       children: [
         Icon(

@@ -1,32 +1,34 @@
 import 'package:expense_manager/controllers/theme_controller.dart';
 import 'package:expense_manager/providers/currency_provider.dart';
+import 'package:expense_manager/services/auth_gate.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:expense_manager/screens/login_screen.dart';
-import 'package:expense_manager/screens/home_screen.dart';
 import 'package:expense_manager/screens/ai_mentor_screen.dart';
 import 'package:expense_manager/screens/literacy_hub_screen.dart';
 import 'package:expense_manager/screens/add_expense_screen.dart';
 import 'package:expense_manager/screens/profile_settings_screen.dart';
 import 'package:expense_manager/screens/notifications_screen.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/controllers/notification_controller.dart';
 import 'package:expense_manager/utils/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-
-
-
-void main() async{
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final currencyProvider = CurrencyProvider();
   await currencyProvider.loadCurrencyCode();
+  await dotenv.load(fileName: ".env");
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['ANON_KEY']!,
+  );
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => ExpenseController()),
         ChangeNotifierProvider(create: (_) => ThemeController()),
         ChangeNotifierProvider(create: (_) => NotificationController()),
@@ -43,7 +45,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Provider.of<ThemeController>(context);
-    final authController = Provider.of<AuthController>(context);
 
     return MaterialApp(
       title: 'FinTrix',
@@ -51,18 +52,8 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeController.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: Consumer<AuthController>(
-        builder: (context, auth, child) {
-          if (auth.isLoading) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          return auth.isAuthenticated ? const HomeScreen() : const LoginScreen();
-        },
-      ),
+      home: const AuthGate(),
+
       routes: {
         '/ai': (_) => const AIMentorScreen(),
         '/hub': (_) => const LiteracyHubScreen(),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
+import 'package:expense_manager/services/auth_service.dart';
 import 'package:expense_manager/screens/home_screen.dart';
 import 'package:expense_manager/widgets/custom_button.dart';
 import 'package:expense_manager/widgets/custom_text_field.dart';
@@ -18,6 +17,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -28,28 +31,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() async {
-    if (_formKey.currentState!.validate()) {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      final success = await authController.register(
-        _usernameController.text,
-        _emailController.text,
-        _passwordController.text,
+  Future<void> _handleRegister() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    final username = _usernameController.text.trim();
+
+    if (password != confirmPassword) {
+      setState(() {
+        _error = "Passwords do not match";
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final res = await _authService.signUpWithEmailPassword(
+        email: email,
+        password: password,
+        username: username,
       );
-      
-      if (success && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+
+      if (res.user != null) {
+        // Navigate to HomeScreen after successful signup
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } else {
+        setState(() {
+          _error = "Registration failed. Try again.";
+        });
       }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
@@ -62,7 +98,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
@@ -78,8 +113,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  
-                  // Registration form
                   CustomTextField(
                     controller: _usernameController,
                     label: 'Username',
@@ -100,12 +133,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
+                      if (value == null || value.isEmpty) return 'Please enter your email';
+                      if (!value.contains('@')) return 'Please enter a valid email';
                       return null;
                     },
                   ),
@@ -117,12 +146,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icons.lock_outline,
                     isPassword: true,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
+                      if (value == null || value.isEmpty) return 'Please enter your password';
+                      if (value.length < 6) return 'Password must be at least 6 characters';
                       return null;
                     },
                   ),
@@ -134,40 +159,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icons.lock_outline,
                     isPassword: true,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
+                      if (value == null || value.isEmpty) return 'Please confirm your password';
+                      if (value != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  
-                  // Error message
-                  if (authController.error != null)
+                  if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        authController.error!,
-                        style: TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 14,
-                        ),
+                        _error!,
+                        style: TextStyle(color: theme.colorScheme.error, fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  
-                  // Register button
                   CustomButton(
                     text: 'Create Account',
-                    isLoading: authController.isLoading,
+                    isLoading: _isLoading,
                     onPressed: _handleRegister,
                   ),
                   const SizedBox(height: 24),
-                  
-                  // Login link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -176,9 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: theme.textTheme.bodyMedium,
                       ),
                       TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+                        onPressed: () => Navigator.of(context).pop(),
                         child: const Text('Login'),
                       ),
                     ],
