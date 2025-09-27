@@ -9,6 +9,7 @@ import 'package:expense_manager/screens/literacy_hub_screen.dart';
 import 'package:expense_manager/screens/add_expense_screen.dart';
 import 'package:expense_manager/screens/profile_settings_screen.dart';
 import 'package:expense_manager/screens/notifications_screen.dart';
+import 'package:expense_manager/screens/swadeshi_meter_screen.dart';
 import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/controllers/notification_controller.dart';
@@ -69,6 +70,7 @@ class MyApp extends StatelessWidget {
         '/add': (_) => const AddExpenseScreen(),
         '/profile-settings': (_) => const ProfileSettingsScreen(),
         '/notifications': (_) => const NotificationsScreen(),
+        '/swadeshi': (_) => const SwadeshiMeterScreen(),
       },
     );
   }

@@ -467,17 +467,38 @@ class _DashboardTabState extends State<DashboardTab> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => _openSetBudgetSheet(context),
-                                      icon: const Icon(Icons.savings_outlined),
-                                      label: const Text('Set Budget'),
-                                    ),
-                                  ),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _openSetBudgetSheet(context),
+                              icon: const Icon(Icons.savings_outlined),
+                              label: const Text('Set Budget'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/swadeshi');
+                          },
+                          icon: const Icon(Icons.flag, color: Colors.orange),
+                          label: const Text('Swadeshi Meter'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.orange,
+                            side: const BorderSide(color: Colors.orange),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
                                 ],
                               )
-                            ],
-                          ),
+                            //],
+                          //),
                         ),
                       );
                     },
