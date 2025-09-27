@@ -1,7 +1,7 @@
+import 'package:expense_manager/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_manager/controllers/expense_controller.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/models/expense_model.dart';
 import 'package:expense_manager/widgets/expense_summary_card.dart';
 import 'package:expense_manager/widgets/recent_transactions_card.dart';
@@ -10,6 +10,7 @@ import 'package:expense_manager/widgets/spending_trend_chart.dart';
 import 'package:expense_manager/utils/theme.dart';
 import 'package:expense_manager/utils/storage_service.dart';
 import 'package:expense_manager/controllers/notification_controller.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -20,6 +21,7 @@ class DashboardTab extends StatefulWidget {
 
 class _DashboardTabState extends State<DashboardTab> {
   final StorageService _storageService = StorageService();
+  final authService = AuthService();
 
   // Calculate dynamic financial health score
   Future<double> _calculateFinancialHealthScore(
@@ -303,8 +305,8 @@ class _DashboardTabState extends State<DashboardTab> {
   @override
   Widget build(BuildContext context) {
     final expenseController = Provider.of<ExpenseController>(context);
-    final authController = Provider.of<AuthController>(context);
     final notificationController = Provider.of<NotificationController>(context);
+    final user = authService.getCurrentUserDetails();
     final theme = Theme.of(context);
 
     // Check budget alerts whenever expenses change
@@ -339,7 +341,8 @@ class _DashboardTabState extends State<DashboardTab> {
                       backgroundColor: theme.colorScheme.primary,
                       radius: 24,
                       child: Text(
-                        authController.currentUser?.username.substring(0, 1) ?? 'U',
+
+                      (authService.currentUsername())?.substring(0, 1) ?? 'U',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -356,7 +359,7 @@ class _DashboardTabState extends State<DashboardTab> {
                           style: theme.textTheme.bodyMedium,
                         ),
                         Text(
-                          authController.currentUser?.username ?? 'User',
+                          user[2],
                           style: theme.textTheme.titleLarge,
                         ),
                       ],

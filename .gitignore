@@ -47,3 +47,7 @@ app.*.map.json
 
 #The actual folder
 PersonalFinanceTracker/
+
+
+#Enviroment files
+*.env

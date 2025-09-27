@@ -1,20 +1,19 @@
-// Removed unused import
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
 import 'package:expense_manager/screens/profile_screen.dart';
 import 'package:expense_manager/screens/settings_screen.dart';
 import 'package:expense_manager/screens/login_screen.dart';
 import 'package:expense_manager/utils/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../services/auth_service.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
     final theme = Theme.of(context);
-    final user = authController.currentUser;
+    final user = Supabase.instance.client.auth.currentUser;
 
     if (user == null) return const SizedBox.shrink();
 
@@ -23,13 +22,11 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-            ),
+            decoration: BoxDecoration(color: theme.colorScheme.primary),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
               child: Text(
-                user.username.substring(0, 1).toUpperCase(),
+                user.email?.substring(0, 1).toUpperCase() ?? "?",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -38,18 +35,12 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             accountName: Text(
-              user.username,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              user.userMetadata?['username'] ?? "User",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             accountEmail: Text(
-              user.email,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
+              user.email ?? "",
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ),
 
@@ -94,44 +85,42 @@ class AppDrawer extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: Icon(
-              Icons.logout,
-              color: AppColors.error,
-            ),
-            title: Text(
-              'Logout',
-              style: TextStyle(color: AppColors.error),
-            ),
+            leading: Icon(Icons.logout, color: AppColors.error),
+            title: Text('Logout', style: TextStyle(color: AppColors.error)),
             onTap: () async {
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await authController.logout();
-                        if (context.mounted) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Logout'),
+                      content: const Text('Are you sure you want to logout?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context); // close the dialog
+                            await AuthService().signOut(); // use AuthService
+
+                            if (context.mounted) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
                                 (route) => false,
-                          );
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.error,
-                      ),
-                      child: const Text('Logout'),
+                              );
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                          ),
+                          child: const Text('Logout'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
