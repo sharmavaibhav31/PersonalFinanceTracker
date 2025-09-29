@@ -9,11 +9,7 @@ import 'package:expense_manager/screens/literacy_hub_screen.dart';
 import 'package:expense_manager/screens/add_expense_screen.dart';
 import 'package:expense_manager/screens/profile_settings_screen.dart';
 import 'package:expense_manager/screens/notifications_screen.dart';
-<<<<<<< HEAD
 import 'package:expense_manager/screens/swadeshi_meter_screen.dart';
-import 'package:expense_manager/controllers/auth_controller.dart';
-=======
->>>>>>> 4c294086ebed6cacdf11e89edb7e4e8c3f8be7fc
 import 'package:expense_manager/controllers/expense_controller.dart';
 import 'package:expense_manager/controllers/notification_controller.dart';
 import 'package:expense_manager/utils/theme.dart';

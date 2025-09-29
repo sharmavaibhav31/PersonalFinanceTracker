@@ -69,20 +69,20 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
             children: [
               // Header
               _buildHeader(theme),
-              const SizedBox(height: 24),
-              
+              const SizedBox(height: 12),
+
               // Swadeshi Score Card
               _buildSwadeshiCard(theme),
               const SizedBox(height: 24),
-              
+
               // Stacked Bar Chart
               _buildStackedBar(theme, indianPercentage, foreignPercentage),
               const SizedBox(height: 24),
-              
+
               // Action Buttons
               _buildActionButtons(theme),
               const SizedBox(height: 24),
-              
+
               // Merchant List
               _buildMerchantList(theme),
               const SizedBox(height: 24), // Extra padding at bottom
@@ -125,7 +125,7 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
 
   Widget _buildSwadeshiCard(ThemeData theme) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.8,
+      width: MediaQuery.of(context).size.width * 0.9,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -138,19 +138,15 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Gauge (60% of card width)
-          Expanded(
-            flex: 6,
+          Align(
+            alignment: Alignment.center,
             child: _buildSwadeshiGauge(theme),
           ),
-          const SizedBox(width: 20),
-          // Numeric Summary (40% of card width)
-          Expanded(
-            flex: 4,
-            child: _buildNumericSummary(theme),
-          ),
+          const SizedBox(height: 16),
+          _buildNumericSummary(theme),
         ],
       ),
     );
@@ -216,13 +212,17 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -377,7 +377,7 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Indian Origin Section
           _buildOriginSection(
             '🇮🇳 Indian Origin',
@@ -386,7 +386,7 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
             theme,
           ),
           const SizedBox(height: 16),
-          
+
           // Foreign Origin Section
           _buildOriginSection(
             '🌐 Foreign/Imported',
@@ -401,7 +401,7 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
 
   Widget _buildOriginSection(String title, List<Map<String, dynamic>> merchants, Color accentColor, ThemeData theme) {
     final totalAmount = merchants.fold<double>(0, (sum, merchant) => sum + merchant['amount']);
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -574,7 +574,7 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               // Alternatives List
               _buildAlternativeCard(
                 'Nike → Bata',
@@ -602,9 +602,9 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
                 Icons.local_cafe,
                 Colors.brown,
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Action Button
               SizedBox(
                 width: double.infinity,
@@ -630,13 +630,13 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
   }
 
   Widget _buildAlternativeCard(
-    String product,
-    String category,
-    String savings,
-    String description,
-    IconData icon,
-    Color color,
-  ) {
+      String product,
+      String category,
+      String savings,
+      String description,
+      IconData icon,
+      Color color,
+      ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -726,8 +726,8 @@ class _SwadeshiMeterScreenState extends State<SwadeshiMeterScreen>
         title: const Text('How the Swadeshi Score works'),
         content: const Text(
           'Swadeshi Score = (Sum of spend at Indian-origin merchants ÷ Total spend) × 100\n\n'
-          'Merchants are labeled by origin via GST/vendor data + user tagging. '
-          'Bonus weighting for made-in-India manufacturing purchases.',
+              'Merchants are labeled by origin via GST/vendor data + user tagging. '
+              'Bonus weighting for made-in-India manufacturing purchases.',
         ),
         actions: [
           TextButton(
@@ -824,18 +824,18 @@ class SparklinePainter extends CustomPainter {
 
     final path = Path();
     final points = [0.3, 0.5, 0.4, 0.7, 0.6, 0.8, 0.72];
-    
+
     for (int i = 0; i < points.length; i++) {
       final x = (size.width / (points.length - 1)) * i;
       final y = size.height * (1 - points[i] * animationValue);
-      
+
       if (i == 0) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
     }
-    
+
     canvas.drawPath(path, paint);
   }
 
